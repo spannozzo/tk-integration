@@ -1,0 +1,15 @@
+apiVersion: extensions/v1beta1
+kind: NetworkPolicy
+metadata:
+  creationTimestamp: null
+  name: tk-integration-network
+  namespace: tk-integration-ns
+spec:
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          io.kompose.network/tk-integration-network: "true"
+  podSelector:
+    matchLabels:
+      io.kompose.network/tk-integration-network: "true"

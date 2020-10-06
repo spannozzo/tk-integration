@@ -1,0 +1,89 @@
+version: '3'
+services:
+  tk-integration-auth:
+    image: spannozzo/tk-integration-auth-native:latest
+    build: 
+      context: ./tk-integration-auth/
+      dockerfile: ./src/main/docker/Dockerfile.native
+    container_name: "tk-integration-auth"
+    environment:
+      - smallrye.jwt.sign.key-location=/META-INF/resources/privatekey.pem
+      - mp.jwt.verify.publickey.location=/META-INF/resources/publickey.pem
+      # - quarkus.http.ssl.certificate.file=META-INF/resources/cert.pem
+      # - quarkus.http.ssl.certificate.key-file=META-INF/resources/key.pem
+      # - quarkus.http.ssl-port=8443
+      - quarkus.http.port=8080
+        # enable this property to access at localhost:/8088/swagger-ui-custom to check open api specs
+      - quarkus.ssl.native=false 
+    ports:
+    # comment htpp port for enabling / disabling direct access, in case the unique access shoul be https 
+      - "8088:8080"
+      - "8443:8443"
+    expose:
+      - "8433"
+      - "8088" 
+    networks:
+      - tk-integration-network
+  tk-integration-fu:
+    image: spannozzo/tk-integration-fu-native:latest
+    build: 
+      context: ./tk-integration-fu/
+      dockerfile: ./src/main/docker/Dockerfile.native
+    container_name: "tk-integration-fu"
+    environment:
+      
+      - quarkus.http.port=8080
+      - smallrye.jwt.sign.key-location=/META-INF/resources/privatekey.pem
+      - mp.jwt.verify.publickey.location=/META-INF/resources/publickey.pem
+      # - quarkus.http.ssl-port=8443
+      # - quarkus.http.ssl.certificate.file=META-INF/resources/cert.pem
+      # - quarkus.http.ssl.certificate.key-file=META-INF/resources/key.pem
+      - auth.url=http://tk-integration-auth:8080/accesstoken
+      #you could use https://tk-integration-auth:8433/accesstoken if you add trust-store certification chain, but since external access is blocked I think is ok also using internal network communication with http port
+      - cv-store-folder=/stored-cvs/      
+    ports:
+      - "8444:8443"
+      - "8082:8080"
+    expose:
+      - "8082"
+      - "8444" 
+    #enable this volume if you want to store CVs outside the container
+    volumes:
+      - ./stored-cvs:/stored-cvs
+    depends_on:
+      - "tk-integration-auth"
+    networks:
+      - tk-integration-network
+  tk-integration-main:
+    image: spannozzo/tk-integration-main-native:latest
+    build: 
+      context: ./tk-integration-main/
+      dockerfile: ./src/main/docker/Dockerfile.native
+    container_name: "tk-integration-main"
+    environment:
+      - smallrye.jwt.sign.key-location=/META-INF/resources/privatekey.pem
+      - mp.jwt.verify.publickey.location=/META-INF/resources/publickey.pem
+      # - quarkus.http.ssl.certificate.file=META-INF/resources/cert.pem
+      # - quarkus.http.ssl.certificate.key-file=META-INF/resources/key.pem
+      # - quarkus.http.ssl-port=8443
+      - quarkus.http.port=8080
+      - auth.url=http://tk-integration-auth:8080/accesstoken
+      - fu.url=http://tk-integration-fu:8080/
+    ports:
+    # comment htpp port for enabling / disabling direct access, in case the unique access shoul be https 
+      - "8080:8080"
+      - "8445:8443"
+    expose:
+      - "8435"
+      - "8080" 
+    depends_on:
+      - "tk-integration-fu"
+      - "tk-integration-auth"
+    networks:
+      - tk-integration-network
+networks:
+  tk-integration-network:
+    external: false 
+    
+
+  

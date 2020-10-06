@@ -1,0 +1,61 @@
+mvn clean package -DskipTests 
+
+mvn quarkus:dev -Ddebug 
+
+
+netstat -ano|findstr "PID :8080"
+taskkill /pid 10964 /f
+
+mvn package -Pnative -Dquarkus.native.container-build=true -DskipTests
+docker build -f src/main/docker/Dockerfile.native -t spannozzo/tk-integration-auth-native .
+docker build -f src/main/docker/Dockerfile.native -t spannozzo/tk-integration-fu-native .
+#docker image tag spannozzo/tk-integration-auth spannozzo/tk-integration-auth-native
+
+#docker save spannozzo/tk-integration-auth-native > ./tk-integration-auth-native.tar
+
+docker stop tk-integration-auth
+
+
+docker run -i --name tk-integration-auth --rm -p 8080:8080 -e smallrye.jwt.sign.key-location=/META-INF/resources/privatekey.pem  -e mp.jwt.verify.publickey.location=/META-INF/resources/publickey.pem spannozzo/tk-integration-auth-native
+
+jwt private key
+openssl req -newkey rsa:2048 -new -nodes -keyout privatekey.pem -out csr.pem
+jwt public key
+openssl rsa -in privatekey.pem -pubout > publickey.pem
+
+
+https
+openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
+
+
+xargs -I % -P 8 curl --location --request GET 'localhost:8080/retrieve/3777616f-a80e-4b24-a20f-55e947a81b07' \
+--header 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL3F1YXJrdXMuaW8vdXNpbmctand0LXJiYWMiLCJ1cG4iOiJzcGFubm96em9AYWNtZS5qd3QiLCJncm91cHMiOlsiQURNSU4iLCJVU0VSIl0sImlhdCI6MTYwMTkxNzM5NSwiZXhwIjoxNjAxOTIwOTk1LCJ6b25laW5mbyI6IkdNVCIsImp0aSI6Ik9iZ2EwX2I3RTlsd2MtV1c4ZzMtcUEifQ.Icaga94Qefs9RQduh4_qtOovUnLxfXdC3IRR2CXuBkVWHQEjWRc-RyaN9R4-i2xR5Bf_FfFEWJtISFZ-yC8WbhQGTUppB5yUX0Wbgs5njFi3ufie3faH4SiIB1Oo9DuY08-Df7MC0PPMNR4fb0Zvf5aF3UY0ZppgN63_YrIbvPiL5IObYuQ_hDHEl0eeCZqVYdWwC0xFqsvWpFaJJvp4QrR3VaPuGRpVrClxa5ZS__JE4G7phq-f0cDz_8zRB82rnsSVYaQkhQWdwMqT3qrYYZU0FW1VtfhDpQZFNvHdgLdEdrnJ85P5mijpeQomsJ_V3h5XTzIuUEbo3cyt6__Y7Q' \
+< <(printf '%s\n' {1..5})
+
+kompose convert
+cd cygdrive/c/work/workspace/tk-integration/kubernetes/
+
+kubectl kustomize .  > ./full-settings.yaml
+
+
+docker image tag tk-integration_tk-integration-main spannozzo/tk-integration-main-native
+docker push spannozzo/tk-integration-main-native
+
+docker image tag tk-integration_tk-integration-auth spannozzo/tk-integration-auth-native
+docker push spannozzo/tk-integration-auth-native
+
+docker image tag tk-integration_tk-integration-fu spannozzo/tk-integration-fu-native
+docker push spannozzo/tk-integration-fu-native
+ 
+kubectl apply -f build.yaml
+
+kubectl delete --all pods --namespace=tk-integration-ns
+kubectl delete --all deployments  --namespace=tk-integration-ns
+kubectl delete --all services  --namespace=tk-integration-ns
+
+kubectl delete --all pods,deployments,services  --namespace=tk-integration-ns
+
+kubectl get events --namespace=tk-integration-ns
+kubectl get pods --namespace=tk-integration-ns
+
+kubectl get all --namespace=tk-integration-ns

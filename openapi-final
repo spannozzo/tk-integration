@@ -1,0 +1,180 @@
+---
+openapi: 3.0.2
+info:
+  title: TK Main - Integration API
+  contact:
+    name: Spannozzo
+    url: http://acme.org/contacts
+    email: spannozzo@acme.org
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: "3.1"
+tags:
+- name: Tk Integration - Main Integration microservice
+  description: "use upload service and auth service for authenticate, store files,\
+    \ and send this file for retrieving data from TK service"
+paths:
+  /accesstoken:
+    get:
+      summary: create a token and return it with information about created and expired
+        local datetime information
+      operationId: getToken
+      responses:
+        "201":
+          description: Token created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token DTO'
+        "401":
+          description: Invalid credentials
+          content:
+            application/json: {}
+        "400":
+          description: Bad request
+          content:
+            application/json: {}
+      security:
+      - basicAuth: []
+  /retrieve/{processId}:
+    get:
+      summary: use process id to retrieve additional information on a cv
+      operationId: retrieveData
+      parameters:
+      - name: processId
+        in: path
+        required: true
+        schema:
+          pattern: \S
+          type: string
+          nullable: false
+      responses:
+        "401":
+          description: Invalid credentials
+          content:
+            text/xml: {}
+        "400":
+          description: Bad request
+          content:
+            text/xml: {}
+        "500":
+          description: Error parsing the retrieved content
+          content:
+            text/xml: {}
+        "202":
+          description: "Accepted: The request has been accepted for processing, but\
+            \ there is a previous process still in progress. It will respond with\
+            \ 'PROGRESS' "
+          content:
+            text/xml: {}
+        "200":
+          description: Content retrieved from TK Service
+          content:
+            text/xml:
+              schema:
+                $ref: '#/components/schemas/Profile XML DTO'
+      security:
+      - jwt: []
+  /submit:
+    post:
+      summary: upload a file and retrieve a process id
+      operationId: uploadFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  $ref: '#/components/schemas/InputStream'
+                fileName:
+                  type: string
+            encoding:
+              fileName:
+                contentType: text/plain
+              file:
+                contentType: application/octet-stream
+      responses:
+        "201":
+          description: process id created
+          content:
+            application/json:
+              schema:
+                type: string
+        "401":
+          description: Invalid credentials
+          content:
+            text/plain: {}
+        "400":
+          description: Bad file submission
+          content:
+            text/plain: {}
+        "500":
+          description: Error saving the file
+          content:
+            text/plain: {}
+      security:
+      - jwt: []
+components:
+  schemas:
+    Token DTO:
+      description: JWT token to be passed for using application APIs
+      required:
+      - createdAt
+      - expireAt
+      - token
+      type: object
+      properties:
+        createdAt:
+          allOf:
+          - $ref: '#/components/schemas/LocalDateTime'
+          - title: Issued Date
+            example: 2020-10-01T19:23:47
+            nullable: false
+        expireAt:
+          allOf:
+          - $ref: '#/components/schemas/LocalDateTime'
+          - title: Expiration Date
+            example: 2020-10-01T19:28:47
+            nullable: false
+        token:
+          title: Generated Token
+          pattern: \S
+          type: string
+          example: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL3F1YXJrdXMuaW8vdXNpbmctand0LXJiYWMiLCJ1cG4iOiJzcGFubm96em9AYWNtZS5qd3QiLCJncm91cHMiOlsiQURNSU4iLCJVU0VSIl0sImlhdCI6MTYwMTU3MjcyNywiZXhwIjoxNjAxNTczMDI3LCJ6b25laW5mbyI6IkV1cm9wZS9CZXJsaW4iLCJqdGkiOiIzM0NYVDB0NS1wQjdrLVAtdEZtenB3In0.EPP4g5P78gf7YvokD_LQkZFjbDp4Icj2NT5zPcoFMAPTdFaXD3t_A5uApFx2stwb-yy143Qh3FUHp57Cawu5oQL31Q4OF1P6NZq_XmSvNhSMWn0qCZcLXIXWpID3ScPoPrH5i8-TfGLKdGguVfX9JDhADJ1unkr0LBC7FOyC0AH3r8QfYJ2DKOdgGpWCCrv7NqfGyzzbCqU2COAj4rMz7bAJmip3aw0GC7otO2uzeL7oCj4K8bF_I5i9Upo7nhC4vu9ekDtSUkzRUX7h49AuK6EUe_ZL1ECdduZPmx6UsVisH0FdgQC-gaux8X4sdmnj_48ElOn0xGT6CY4bTLzlqA
+          nullable: false
+    LocalDateTime:
+      format: date-time
+      type: string
+    Profile XML DTO:
+      description: XML rapresentation of the processed file
+      type: object
+      properties:
+        Address:
+          $ref: '#/components/schemas/Address XML DTO'
+        FirstName:
+          type: string
+        LastName:
+          type: string
+    Address XML DTO:
+      description: 'XML rapresentation of a profile address '
+      type: object
+      properties:
+        City:
+          type: string
+        PostalCode:
+          type: string
+        StreetName:
+          type: string
+        StreetNumberBase:
+          type: string
+    InputStream:
+      type: object
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: Basic
+    jwt:
+      type: http
+      scheme: Bearer
