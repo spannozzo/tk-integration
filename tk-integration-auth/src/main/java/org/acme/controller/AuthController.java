@@ -1,5 +1,7 @@
 package org.acme.controller;
 
+import java.security.NoSuchProviderException;
+
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -16,9 +18,7 @@ import javax.ws.rs.core.Response;
 import org.acme.dto.BasicAuthDTO;
 import org.acme.dto.TokenDTO;
 import org.acme.dto.TokenValidationDTO;
-import org.acme.exceptions.InvalidTokenException;
 import org.acme.exceptions.MalformedBasicAuthenticationException;
-import org.acme.exceptions.WrongUserOrPasswordException;
 import org.acme.service.AuthService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -55,7 +55,7 @@ public class AuthController {
 			@APIResponse(responseCode = "400", description = "Bad request", content = @Content)
 			
 	})
-	public Response getToken(@HeaderParam("Authorization") @NotNull String authorizationValue) {
+	public Response getToken(@HeaderParam("Authorization") @NotNull String authorizationValue) throws NoSuchProviderException {
 		BasicAuthDTO credentials=new BasicAuthDTO();
 		try {
 			credentials=authService.getCredentials(authorizationValue);
@@ -63,7 +63,7 @@ public class AuthController {
 			throw new MalformedBasicAuthenticationException(e.getMessage(),e);
 		}
 		
-		TokenDTO returnValue=authService.getCreateToken(credentials);;
+		TokenDTO returnValue=authService.getCreateToken(credentials);
 				
 		return Response.status(Response.Status.CREATED).entity(returnValue).build();
 
@@ -80,15 +80,12 @@ public class AuthController {
 			}),
 			@APIResponse(responseCode = "400", description = "Invalid or malformed token", content = @Content)
 	})
-	public Response validateToken(@Valid @NotBlank String token) throws WrongUserOrPasswordException {
+	public Response validateToken(@Valid @NotBlank String token) throws InvalidJwtException {
 
 		TokenValidationDTO returnValue = null;
-		try {
-			returnValue = authService.validateToken(token);
-		} catch (InvalidJwtException|IndexOutOfBoundsException|IllegalArgumentException e) {
-			throw new InvalidTokenException(e.getMessage(),e);
-		}
-
+		
+		returnValue = authService.validateToken(token);
+		
 		return Response.status(Response.Status.OK).entity(returnValue).build();
 
 	}

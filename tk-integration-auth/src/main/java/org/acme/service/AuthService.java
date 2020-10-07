@@ -3,6 +3,7 @@ package org.acme.service;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -27,7 +28,7 @@ import org.acme.util.JWTGeneratorUtil;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 
-import io.smallrye.jwt.auth.principal.JWTCallerPrincipal;;
+import io.smallrye.jwt.auth.principal.JWTCallerPrincipal;
 
 @Singleton
 public class AuthService {
@@ -44,7 +45,7 @@ public class AuthService {
 	@ConfigProperty(name = "acme.jwt.encrypted-password")
 	String encryptedPassword;
 
-	public @Valid TokenDTO getCreateToken(@Valid BasicAuthDTO credentials) {
+	public @Valid TokenDTO getCreateToken(@Valid BasicAuthDTO credentials) throws NoSuchProviderException  {
 
 		Boolean checkUserName = false;
 		Boolean checkPassword = false;
@@ -55,12 +56,12 @@ public class AuthService {
 			checkPassword = encryptionUtil.encrypt(credentials.getPassword()).equals(encryptedPassword);
 
 		} catch (InvalidKeyException | InvalidAlgorithmParameterException | IllegalBlockSizeException
-				| BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+				| BadPaddingException  e) {
 
 			throw new EncryptionCredentialException(e.getMessage(), e);
 		}
 
-		if (!checkUserName || !checkPassword) {
+		if (Boolean.FALSE.equals(checkUserName) || Boolean.FALSE.equals(checkPassword)) {
 			throw new WrongUserOrPasswordException("Wrong user name or password");
 		}
 
@@ -74,7 +75,7 @@ public class AuthService {
 		
 	}
 
-	private TokenDTO getTokenDto(String token) throws IndexOutOfBoundsException, IllegalArgumentException, InvalidJwtException {
+	private TokenDTO getTokenDto(String token) throws InvalidJwtException {
 
 		JWTCallerPrincipal principal = jWTGeneratorUtil.getPrincipal(token);
 
@@ -88,14 +89,13 @@ public class AuthService {
 		return new TokenDTO(token,issuedDate,expirationDate);
 	}
 
-	public @Valid TokenValidationDTO validateToken(String token)
-			throws InvalidJwtException, IndexOutOfBoundsException, IllegalArgumentException {
+	public @Valid TokenValidationDTO validateToken(String token) throws InvalidJwtException  {
 		JWTCallerPrincipal principal = jWTGeneratorUtil.getPrincipal(token);
 
 		if (principal == null) {
 			return new TokenValidationDTO(false, token, "0").setReason("Malformed Token");
 		}
-		if (jWTGeneratorUtil.isTokenExpired(token)) {
+		if (Boolean.TRUE.equals(jWTGeneratorUtil.isTokenExpired(token))) {
 			return new TokenValidationDTO(false, token, "0").setReason("Expired Token");
 		}
 
@@ -113,7 +113,7 @@ public class AuthService {
 
 	}
 
-	public BasicAuthDTO getCredentials(String authorizationValue) throws IndexOutOfBoundsException,MalformedBasicAuthenticationException {
+	public BasicAuthDTO getCredentials(String authorizationValue) {
 		
 		if (!authorizationValue.contains("Basic ")) {
 			throw new MalformedBasicAuthenticationException("Malformed Basic Authentication");

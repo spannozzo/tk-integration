@@ -24,7 +24,7 @@ import io.restassured.http.ContentType;
 
 @QuarkusTest
 @TestMethodOrder(OrderAnnotation.class)
-public class AuthControllerTest {
+class AuthControllerTest {
 
 	
 	@ConfigProperty(name = "acme.basic.auth.user",defaultValue = "misterX")
@@ -38,7 +38,7 @@ public class AuthControllerTest {
 	
 	@Test
 	@Order(1)
-	public void should_give_401_when_password_are_wrong() {
+	void should_give_401_when_password_are_wrong() {
 		String encodedString=Base64.getEncoder().encodeToString(("mister_x"+":"+"1234").getBytes());
 		
 		given()
@@ -53,7 +53,7 @@ public class AuthControllerTest {
 	}
 	@Test
 	@Order(1)
-	public void should_give_400_when_basic_auth_is_malformed() {
+	void should_give_400_when_basic_auth_is_malformed() {
 		String encodedString=Base64.getEncoder().encodeToString((username+"xxx"+password).getBytes());
 		
 		given()
@@ -68,7 +68,7 @@ public class AuthControllerTest {
 	}
 	@Test
 	@Order(1)
-	public void should_give_400_when_authorization_header_is_missing() {
+	void should_give_400_when_authorization_header_is_missing() {
 		String encodedString=Base64.getEncoder().encodeToString((username+":"+password).getBytes());
 		
 		given()
@@ -83,7 +83,7 @@ public class AuthControllerTest {
 	}
 	@Test
 	@Order(1)
-	public void should_give_400_when_authorization_Basic_is_missing() {
+	void should_give_400_when_authorization_Basic_is_missing() {
 		String encodedString=Base64.getEncoder().encodeToString((username+":"+password).getBytes());
 		
 		given()
@@ -98,7 +98,7 @@ public class AuthControllerTest {
 	}
 	@Test
 	@Order(2)
-	public void should_authenticate_and_create_a_token() {
+	void should_authenticate_and_create_a_token() {
 		
 			String encodedString=Base64.getEncoder().encodeToString((username+":"+password).getBytes());
 		
@@ -118,7 +118,7 @@ public class AuthControllerTest {
 	}
 	@Test
 	@Order(3)
-	public void should_be_able_to_validate_token() {
+	void should_be_able_to_validate_token() {
 				
 			TokenValidationDTO tokenValidation=given()
 				.contentType("text/html")

@@ -25,7 +25,7 @@ import io.smallrye.jwt.auth.principal.JWTCallerPrincipal;
 
 
 @QuarkusTest
-public class JWTGeneratorUtilTest {
+class JWTGeneratorUtilTest {
 
 	@Inject
 	JWTGeneratorUtil util;
@@ -40,7 +40,7 @@ public class JWTGeneratorUtilTest {
 	Set<String> roles;
 	
 	@Test
-	public void should_create_a_JWT_token() throws InvalidJwtException {
+	void should_create_a_JWT_token() throws InvalidJwtException {
 		String token = util.getToken();
 		        
 		assertThat(token, is(not(emptyOrNullString())));

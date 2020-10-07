@@ -47,7 +47,7 @@ public class JWTGeneratorUtil {
 		 	   .sign();
 	}
 
-	public JWTCallerPrincipal getPrincipal(String token) throws InvalidJwtException,IndexOutOfBoundsException,IllegalArgumentException {
+	public JWTCallerPrincipal getPrincipal(String token) throws InvalidJwtException {
 		String json = new String(Base64.getUrlDecoder().decode(token.split("\\.")[1]), StandardCharsets.UTF_8);
 		return new DefaultJWTCallerPrincipal(JwtClaims.parse(json));
 	}
