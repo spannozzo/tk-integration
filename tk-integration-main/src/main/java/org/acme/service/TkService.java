@@ -6,8 +6,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.annotation.PostConstruct;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -17,6 +23,7 @@ import org.acme.dto.MultipartTKRequestDTO;
 import org.acme.dto.ProfileDTO;
 import org.acme.exceptions.TKResponseException;
 import org.acme.exceptions.TKUnparsableResponse;
+import org.acme.util.EncryptPropertyUtil;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -26,23 +33,34 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import io.quarkus.security.jpa.Password;
+
 @Singleton
 public class TkService {
 
 	CloseableHttpClient client;
 
+	
 	@ConfigProperty(name = "tk.service.url")
+	@Password
 	String serviceUrl;
 
+	
 	JAXBContext context;
 
 	Unmarshaller unmarshaller;
+	
+	@Inject
+	EncryptPropertyUtil encryptionUtil;
 
 	@PostConstruct
-	void init() throws JAXBException {
+	void init() throws JAXBException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 
 		context = JAXBContext.newInstance(ProfileDTO.class);
 		unmarshaller = context.createUnmarshaller();
+		
+		serviceUrl=encryptionUtil.decrypt(serviceUrl);
+		
 	}
 
 	
