@@ -33,8 +33,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-import io.quarkus.security.jpa.Password;
-
 @Singleton
 public class TkService {
 
@@ -42,7 +40,8 @@ public class TkService {
 
 	
 	@ConfigProperty(name = "tk.service.url")
-	@Password
+	
+	
 	String serviceUrl;
 
 	

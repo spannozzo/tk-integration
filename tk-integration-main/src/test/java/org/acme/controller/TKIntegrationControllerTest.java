@@ -9,11 +9,8 @@ import static org.hamcrest.Matchers.not;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-
 import javax.inject.Inject;
 
-import org.acme.dto.MultipartBodyDTO;
 import org.acme.restclient.FuRestClient;
 import org.acme.service.IntegrationService;
 import org.apache.http.HttpStatus;

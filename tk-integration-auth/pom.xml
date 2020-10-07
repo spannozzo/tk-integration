@@ -59,12 +59,7 @@
 		<dependency>
 			<groupId>io.quarkus</groupId>
 			<artifactId>quarkus-resteasy-jsonb</artifactId>
-		</dependency>
-		<!-- basic auth -->
-		<dependency>
-			<groupId>io.quarkus</groupId>
-			<artifactId>quarkus-security-jpa</artifactId>
-		</dependency>
+		</dependency>	
 
 		<dependency>
 			<groupId>io.quarkus</groupId>
