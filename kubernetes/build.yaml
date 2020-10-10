@@ -16,15 +16,11 @@ metadata:
   namespace: tk-integration-ns
 spec:
   ports:
-  # - name: "8443"
-    # port: 8443
-    # targetPort: 8443
   - name: "8088"
     port: 8088
     targetPort: 8088
   selector:
     io.kompose.service: tk-integration-auth
-  #type: LoadBalancer
 status:
   loadBalancer: {}
 ---
@@ -41,15 +37,11 @@ metadata:
   namespace: tk-integration-ns
 spec:
   ports:
-  # - name: "8444"
-    # port: 8444
-    # targetPort: 8444
   - name: "8082"
     port: 8082
     targetPort: 8082
   selector:
     io.kompose.service: tk-integration-fu
-  # type: LoadBalancer
 status:
   loadBalancer: {}
 ---
@@ -66,12 +58,9 @@ metadata:
   namespace: tk-integration-ns
 spec:
   ports:
-  # - name: "8080"
-    # port: 8080
-    # targetPort: 8080
-  - name: "8445"
-    port: 8445
-    targetPort: 8445
+  - name: "8443"
+    port: 8443
+    targetPort: 8443
   selector:
     io.kompose.service: tk-integration-main
   type: LoadBalancer
@@ -90,7 +79,7 @@ metadata:
   name: tk-integration-auth
   namespace: tk-integration-ns
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       io.kompose.service: tk-integration-auth
@@ -111,14 +100,6 @@ spec:
           value: /META-INF/resources/publickey.pem
         - name: quarkus.http.port
           value: "8088"
-        # - name: quarkus.http.ssl-port
-          # value: "8443"
-        # - name: quarkus.http.ssl.certificate.file
-          # value: META-INF/resources/cert.pem
-        # - name: quarkus.http.ssl.certificate.key-file
-          # value: META-INF/resources/key.pem
-        # - name: quarkus.ssl.native
-          # value: "false"
         - name: smallrye.jwt.sign.key-location
           value: /META-INF/resources/privatekey.pem
         image: spannozzo/tk-integration-auth-native:latest
@@ -145,7 +126,7 @@ metadata:
   name: tk-integration-fu
   namespace: tk-integration-ns
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       io.kompose.service: tk-integration-fu
@@ -163,19 +144,13 @@ spec:
       containers:
       - env:
         - name: cv-store-folder
-          value: stored-cvs/
+          value: ./
         - name: mp.jwt.verify.publickey.location
           value: /META-INF/resources/publickey.pem
         - name: "auth.url"
           value: http://tk-integration-auth:8088/accesstoken
         - name: quarkus.http.port
           value: "8082"
-        # - name: quarkus.http.ssl-port
-          # value: "8444"
-        # - name: quarkus.http.ssl.certificate.file
-          # value: META-INF/resources/cert.pem
-        # - name: quarkus.http.ssl.certificate.key-file
-          # value: META-INF/resources/key.pem
         - name: smallrye.jwt.sign.key-location
           value: /META-INF/resources/privatekey.pem
         image: spannozzo/tk-integration-fu-native:latest
@@ -184,16 +159,16 @@ spec:
         ports:
         - containerPort: 8082
         # - containerPort: 8444
-        volumeMounts:
-        - name: stored-cvsx
-          mountPath: /stored-cvs/
+        # volumeMounts:
+        # - name: stored-cv-folder
+          # mountPath: ./
         resources: {}
       restartPolicy: Always
       serviceAccountName: ""
       volumes:
-      - name: stored-cvsx
+      - name: stored-cv-folder
         persistentVolumeClaim:
-          claimName: stored-cvsx
+          claimName: stored-cv-folder
 status: {}
 ---
 apiVersion: apps/v1
@@ -234,7 +209,7 @@ spec:
         - name: quarkus.http.port
           value: "8080"
         - name: quarkus.http.ssl-port
-          value: "8445"
+          value: "8443"
         - name: quarkus.http.ssl.certificate.file
           value: META-INF/resources/cert.pem
         - name: quarkus.http.ssl.certificate.key-file
@@ -245,8 +220,7 @@ spec:
         imagePullPolicy: ""
         name: tk-integration-main
         ports:
-        # - containerPort: 8080
-        - containerPort: 8445
+        - containerPort: 8443
         resources: {}
       restartPolicy: Always
       serviceAccountName: ""
@@ -258,7 +232,7 @@ kind: PersistentVolumeClaim
 metadata:
   namespace: tk-integration-ns
   creationTimestamp: null
-  name: stored-cvsx
+  name: stored-cv-folder
   labels:
     io.kompose.service: tk-integration-fu
     io.kompose.network/tk-integration-network: "true"
