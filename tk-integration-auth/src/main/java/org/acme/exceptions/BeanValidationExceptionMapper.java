@@ -11,10 +11,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.jboss.logging.Logger;
+
 import static javax.ws.rs.core.Response.status;
 
 @Provider
 public class BeanValidationExceptionMapper implements ExceptionMapper<ValidationException> {
+	
+    static final Logger LOG = Logger.getLogger(BeanValidationExceptionMapper.class);
+    
 	@Override
 	public Response toResponse(ValidationException exception) {
 		if (exception instanceof ConstraintViolationException) {
@@ -42,6 +47,7 @@ public class BeanValidationExceptionMapper implements ExceptionMapper<Validation
 			return status(Response.Status.BAD_REQUEST).entity(message).build();
 		}
 		
+		LOG.fatal("Internal Server Error. "+exception.getMessage() );
 		
 		return status(Response.Status.INTERNAL_SERVER_ERROR).entity(exception.getMessage()).build();
 	}

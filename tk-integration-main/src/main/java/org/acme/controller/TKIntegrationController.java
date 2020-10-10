@@ -1,6 +1,7 @@
 package org.acme.controller;
 
 import java.io.InputStream;
+import java.util.concurrent.CompletionStage;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -83,20 +84,12 @@ public class TKIntegrationController {
 					+ "but there is a previous process still in progress. It will respond with 'PROGRESS' ", content = @Content)
 
 	})
-    public Response retrieveData(@PathParam("processId") @NotBlank String processId) throws Throwable  {
-    	
-    	integrationService.checkJwt(jwt);
-    	
+    public CompletionStage<Response> retrieveData(@PathParam("processId") @NotBlank String processId)  {
+    	    	
     	InputStream fileIS=integrationService.findFile(jwt.getRawToken(),processId);
-    	
-    	ProfileDTO cvProfile = null;
-		try {
-			cvProfile = integrationService.callTkService(fileIS,processId);
-		} catch (Throwable e) {
-			throw e;
-		}
-		
-    	return Response.status(Response.Status.OK).entity(cvProfile).build();       
+    	    	
+    	return integrationService.getTKServiceResponse(fileIS, processId);
+    		
     }
   
     /**
@@ -130,7 +123,9 @@ public class TKIntegrationController {
     
     /**
      * required for Kubernetes gold application
-     * on local the auth and file upload services are available either with ssl or through tcp
+     * on local the auth and file upload services are available either with ssl or through tcp,
+     * but with kubernetes they are declared as clusterIp so they are available only from the main
+     * service
      * @param authorizationValue
      * @param data
      * @return

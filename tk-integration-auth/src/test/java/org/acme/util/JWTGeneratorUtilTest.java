@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Set;
@@ -40,7 +41,7 @@ class JWTGeneratorUtilTest {
 	Set<String> roles;
 	
 	@Test
-	void should_create_a_JWT_token() throws InvalidJwtException {
+	void should_create_a_JWT_token() throws InvalidJwtException, IOException {
 		String token = util.getToken();
 		        
 		assertThat(token, is(not(emptyOrNullString())));

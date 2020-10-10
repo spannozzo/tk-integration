@@ -1,7 +1,5 @@
 package org.acme.controller;
 
-import java.security.NoSuchProviderException;
-
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -15,10 +13,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import org.acme.dto.BasicAuthDTO;
 import org.acme.dto.TokenDTO;
 import org.acme.dto.TokenValidationDTO;
-import org.acme.exceptions.MalformedBasicAuthenticationException;
 import org.acme.service.AuthService;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -28,11 +26,14 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
-import org.jose4j.jwt.consumer.InvalidJwtException;
 
 
 @RequestScoped
 @Path("/accesstoken")
+//@SecuritySchemes(value= {
+//		@SecurityScheme(securitySchemeName="basicAuth",type = SecuritySchemeType.HTTP,scheme = "Basic"),
+//		@SecurityScheme(securitySchemeName = "jwt", type = SecuritySchemeType.HTTP, scheme = "Bearer")
+//})
 @SecurityScheme(securitySchemeName="basicAuth",type = SecuritySchemeType.HTTP,scheme = "Basic")
 public class AuthController {
 
@@ -55,13 +56,9 @@ public class AuthController {
 			@APIResponse(responseCode = "400", description = "Bad request", content = @Content)
 			
 	})
-	public Response getToken(@HeaderParam("Authorization") @NotNull String authorizationValue) throws NoSuchProviderException {
-		BasicAuthDTO credentials=new BasicAuthDTO();
-		try {
-			credentials=authService.getCredentials(authorizationValue);
-		}catch (IndexOutOfBoundsException | MalformedBasicAuthenticationException e) {
-			throw new MalformedBasicAuthenticationException(e.getMessage(),e);
-		}
+	public Response getToken(@Valid @HeaderParam("Authorization") @NotNull String authorizationValue) {
+				
+		BasicAuthDTO credentials=authService.getCredentials(authorizationValue);
 		
 		TokenDTO returnValue=authService.getCreateToken(credentials);
 				
@@ -69,24 +66,24 @@ public class AuthController {
 
 	}
 	
+		
 	@POST
 	@Path("/check")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.TEXT_HTML)
 	@Operation(summary = "check if a token is valid and return remaing minutes before expiration")
+//	@SecurityRequirement(name = "jwt")
 	@APIResponses(value = { 
 			@APIResponse(responseCode = "200", description = "Token status information", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = TokenValidationDTO.class)) 
 			}),
 			@APIResponse(responseCode = "400", description = "Invalid or malformed token", content = @Content)
 	})
-	public Response validateToken(@Valid @NotBlank String token) throws InvalidJwtException {
-
-		TokenValidationDTO returnValue = null;
+	public Response validateToken(@NotBlank String token) {
 		
-		returnValue = authService.validateToken(token);
+		TokenValidationDTO validatedToken=authService.validateToken(token);
 		
-		return Response.status(Response.Status.OK).entity(returnValue).build();
+		return Response.status(Response.Status.OK).entity(validatedToken).build();
 
 	}
 

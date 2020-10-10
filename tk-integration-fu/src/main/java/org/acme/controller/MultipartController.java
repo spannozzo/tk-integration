@@ -1,11 +1,11 @@
 package org.acme.controller;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import javax.annotation.security.RolesAllowed;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -18,8 +18,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.acme.dto.MultipartBodyDTO;
-import org.acme.exceptions.InvalidFileStoringException;
-import org.acme.exceptions.ProcessIdNotFoundException;
 import org.acme.service.MultipartService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -47,6 +45,7 @@ public class MultipartController {
 	MultipartService mpService;
 
 	
+	
 	@POST
 	@RolesAllowed({ "USER", "ADMIN" })
 	@Path("/submit")
@@ -67,17 +66,10 @@ public class MultipartController {
 	public Response uploadFile(
 			@HeaderParam("Authorization") @NotNull String authorizationValue,
 				@RequestBody(content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA, schema = @Schema(type = SchemaType.OBJECT))) 
-				@MultipartForm MultipartBodyDTO data) {
-		String processId="";
+				@MultipartForm @Valid MultipartBodyDTO data) {
 		
-		mpService.checkJwt(jwt);
+		String processId=mpService.storeFile(data);
 		
-		try {
-			processId=mpService.storeFile(data);
-		} catch (IOException e) {
-			throw new InvalidFileStoringException(e.getMessage(),e);
-		}
-			
 		return Response.status(Response.Status.CREATED).entity(processId).build();
 
 	}
@@ -98,17 +90,8 @@ public class MultipartController {
 	})
 	public Response retrieveFile( 	@HeaderParam("Authorization") @NotNull String authorizationValue,
 									@PathParam("processId") @NotBlank String processId) {
-		
-		mpService.checkJwt(jwt);
-		
-		InputStream retrievedFileIS=InputStream.nullInputStream();
-		try {
-			retrievedFileIS = mpService.getFileInputStream(processId);
-		} catch (IndexOutOfBoundsException e) {
-			throw new ProcessIdNotFoundException("No file associated with process id: "+processId);
-		} catch (IOException e) {
-			throw new FileRetrievingException(e.getMessage(),e);
-		}
+				
+		InputStream retrievedFileIS = mpService.getFileInputStream(processId);
 		
 		return Response.status(Response.Status.OK).entity(retrievedFileIS).build();
 

@@ -12,15 +12,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @RegisterRestClient(baseUri = "{url}")
 public interface AuthRestClient {
 
-	@ConfigProperty(name = "auth.url")
-	public static final String url = "";
-	
+		
 	@GET
 	@Path("/")
 	@Produces(MediaType.APPLICATION_JSON)

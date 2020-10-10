@@ -1,0 +1,30 @@
+version: '3'
+services:
+  tk-integration-auth:
+    image: spannozzo/tk-integration-auth-native:latest
+    build: 
+      context: ./tk-integration-auth/
+      dockerfile: ./src/main/docker/Dockerfile.native
+    container_name: "tk-integration-auth"
+    environment:
+      - smallrye.jwt.sign.key-location=/META-INF/resources/privatekey.pem
+      - mp.jwt.verify.publickey.location=/META-INF/resources/publickey.pem
+      # - quarkus.http.ssl.certificate.file=META-INF/resources/cert.pem
+      # - quarkus.http.ssl.certificate.key-file=META-INF/resources/key.pem
+      # - quarkus.http.ssl-port=8443
+      - quarkus.http.port=8080
+        # enable this property to access at localhost:/8088/swagger-ui-custom to check open api specs
+      - quarkus.ssl.native=false 
+    ports:
+    # comment htpp port for enabling / disabling direct access, in case the unique access shoul be https 
+      - "8088:8080"
+    expose:
+      - "8088" 
+    networks:
+      - tk-integration-network
+networks:
+  tk-integration-network:
+    external: false 
+    
+
+  

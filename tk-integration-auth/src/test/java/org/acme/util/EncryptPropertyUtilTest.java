@@ -6,16 +6,15 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyOrNullString;
 
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.util.Base64;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.ShortBufferException;
 import javax.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -32,56 +31,38 @@ import io.quarkus.test.junit.QuarkusTest;
 @TestMethodOrder(OrderAnnotation.class)
 class EncryptPropertyUtilTest {
 
-	@Inject
-	EncryptPropertyUtil encryptionUtil;
-
 	static String encrypted;
 	
-	@ConfigProperty(name = "acme.jwt.password",defaultValue = "1234")
-	String testPassword;
+	@ConfigProperty(name = "acme.jwt.value",defaultValue = "myuser")
+	String value;
 
-	@ConfigProperty(name = "acme.jwt.password.keylength",defaultValue = "128")
-	Integer keylength;
+	
+	@ConfigProperty(name = "acme.aes.password",defaultValue = "xxx")
+	String encPassword;
 
-	private static String decrypted;
+	@Inject
+	AESUtil aesUtils;
 	
 	@Test
 	@Order(1)
-	void should_encrypt_a_password() throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException {
+	void shoudl_generate_key() throws InvalidKeyException, UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
 		
-		
-		encrypted=encryptionUtil.encrypt(testPassword);
+		encrypted=aesUtils.encrypt(value, encPassword);
 		
 		assertThat(encrypted, is(not(emptyOrNullString())));
-		assertThat(Base64.getDecoder().decode(encrypted), is(not(testPassword)));
+		assertThat(Base64.getDecoder().decode(encrypted), is(not(value)));
+		
 	}
 	
 	@Test
 	@Order(2)
-	void should_decrypt_into_original_password_value() throws InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException {
-		decrypted=encryptionUtil.decrypt(encrypted);
+	void should_decrypt_into_original_password_value() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, UnsupportedEncodingException, IllegalBlockSizeException, BadPaddingException  {
+		String decrypted = aesUtils.decrypt(encrypted,encPassword);
 		
 		assertThat(decrypted, is(notNullValue()));
-		assertThat(decrypted, is(testPassword));
+		assertThat(decrypted, is(value));
 	}
 	
-	@Test
-	@Order(3)
-	void check_encryptions_from_new_key() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException, InvalidAlgorithmParameterException, ShortBufferException, IllegalBlockSizeException, BadPaddingException {
-		String key =encryptionUtil.getSecretKey();
-		
-		String encrypted=encryptionUtil.encrypt(testPassword);
-		
-		assertThat(encrypted, is(not(emptyOrNullString())));
-		assertThat(Base64.getDecoder().decode(encrypted), is(not(testPassword)));
-		
-		String decrypted=encryptionUtil.decrypt(encrypted);
-		
-		assertThat(decrypted, is(notNullValue()));
-		assertThat(decrypted, is(testPassword));
-		assertThat(decrypted, is(EncryptPropertyUtilTest.decrypted));
-	}
-
 	
 
 }

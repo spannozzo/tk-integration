@@ -28,6 +28,9 @@ public class MultipartTKRequestDTO {
 		return password;
 	}
 
+	
+	public MultipartTKRequestDTO() {
+	}
 	public MultipartTKRequestDTO(InputStream f, String account, String username, String password) {
 		super();
 		this.file = f;

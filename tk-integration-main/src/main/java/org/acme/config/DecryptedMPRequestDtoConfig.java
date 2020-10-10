@@ -1,17 +1,19 @@
 package org.acme.config;
 
 import java.io.InputStream;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.util.Optional;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.acme.dto.MultipartTKRequestDTO;
-import org.acme.util.EncryptPropertyUtil;
+import org.acme.util.AESUtil;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @Singleton
@@ -26,8 +28,8 @@ public class DecryptedMPRequestDtoConfig {
 	@ConfigProperty(name = "encrypted.tk.password")
 	String password;
 	
-	@Inject
-	EncryptPropertyUtil encryptionUtil;
+	@ConfigProperty(name = "acme.aes.password")
+	String aesPassword;
 
 	/**
 	 * use encryption util lib for decrypting credentials passed as properties
@@ -39,14 +41,16 @@ public class DecryptedMPRequestDtoConfig {
 	 * @throws IllegalBlockSizeException
 	 * @throws BadPaddingException
 	 * @throws NumberFormatException
+	 * @throws InvalidAlgorithmParameterException 
+	 * @throws NoSuchProviderException 
 	 */
-	public MultipartTKRequestDTO getDecryptedMultipartDTO(InputStream data) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException,NumberFormatException {
+	public Optional<MultipartTKRequestDTO> getDecryptedMultipartDTO(InputStream data) {
 		
-    	final String decryptedAccount=encryptionUtil.decrypt(account);
-    	final String decryptedUsername=encryptionUtil.decrypt(username);
-    	final String decryptedPassword=encryptionUtil.decrypt(password);
+    	final String decryptedAccount=AESUtil.getInstance().decrypt(account, aesPassword);
+    	final String decryptedUsername=AESUtil.getInstance().decrypt(username, aesPassword);
+    	final String decryptedPassword=AESUtil.getInstance().decrypt(password, aesPassword);
     	
-    	return new MultipartTKRequestDTO(data, decryptedAccount, decryptedUsername, decryptedPassword);
+    	return Optional.of(new MultipartTKRequestDTO(data, decryptedAccount, decryptedUsername, decryptedPassword));
 		
 	}
 	

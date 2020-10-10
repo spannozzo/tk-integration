@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
 import javax.validation.ValidationException;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -24,7 +25,7 @@ public class BeanValidationExceptionMapper implements ExceptionMapper<Validation
 		if (exception instanceof ConstraintViolationException) {
 			return manageConstraintViolations((ConstraintViolationException) exception);
 		}
-		if (exception instanceof InvalidJWTException) {
+		if (exception instanceof InvalidTokenException) {
 			return status(Response.Status.UNAUTHORIZED).entity(exception.getMessage()).build();
 		}
 		if (exception instanceof ProcessIdNotFoundException) {
@@ -50,12 +51,14 @@ public class BeanValidationExceptionMapper implements ExceptionMapper<Validation
         
         return status(Response.Status.BAD_REQUEST).entity(errors).build();
     }
-    String lastFieldName(Iterator<Path.Node> nodes) {
+    String lastFieldName(@NotNull Iterator<Path.Node> nodes) {
         Path.Node last = null;
         while (nodes.hasNext()) {
             last = nodes.next();
-        }
-        return last.getName();
+        }if (last!=null) {
+            return last.getName();
+		}
+        return "";
     }
 	
 }

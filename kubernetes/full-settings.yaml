@@ -88,7 +88,7 @@ metadata:
   name: tk-integration-auth
   namespace: tk-integration-ns
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       io.kompose.service: tk-integration-auth
@@ -143,7 +143,7 @@ metadata:
   name: tk-integration-fu
   namespace: tk-integration-ns
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       io.kompose.service: tk-integration-fu
@@ -200,7 +200,7 @@ metadata:
   name: tk-integration-main
   namespace: tk-integration-ns
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       io.kompose.service: tk-integration-main

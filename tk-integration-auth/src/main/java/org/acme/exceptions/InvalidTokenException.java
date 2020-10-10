@@ -9,4 +9,8 @@ public class InvalidTokenException extends ValidationException {
 	public InvalidTokenException(String message,Throwable t) {
 		super(message,t);
 	}
+
+	public InvalidTokenException(String message) {
+		super(message);
+	}
 }

@@ -1,4 +1,4 @@
-package org.acme.controller;
+package org.acme.exceptions;
 
 import javax.validation.ValidationException;
 
@@ -8,7 +8,7 @@ public class FileRetrievingException extends ValidationException {
 	
 	public FileRetrievingException(String message, Throwable cause) {
 		super(message, cause);
-		// TODO Auto-generated constructor stub
+		
 	}
 
 }

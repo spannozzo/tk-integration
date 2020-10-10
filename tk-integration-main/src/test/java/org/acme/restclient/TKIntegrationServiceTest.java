@@ -11,14 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.inject.Inject;
-import javax.xml.bind.JAXBException;
-
 import org.acme.config.DecryptedMPRequestDtoConfig;
 import org.acme.dto.MultipartTKRequestDTO;
 import org.acme.dto.ProfileDTO;
@@ -33,19 +26,15 @@ import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 @TestMethodOrder(OrderAnnotation.class)
-public class TKIntegrationServiceTest {
+ class TKIntegrationServiceTest {
 
 		
 	String password;
 	
-	@ConfigProperty(name = "test-file")
+	@ConfigProperty(name = "test-file1")
 	String testFileUrl;
-	
-	@ConfigProperty(name = "tk-integration-logs")
-	String cvStoreFolder;
-	
+		
 	static File file;
-	
 	
 	@Inject
 	DecryptedMPRequestDtoConfig decryptedMPRequestDtoConfig;
@@ -57,13 +46,13 @@ public class TKIntegrationServiceTest {
 	
     @Test
     @Order(1)
-    public void should_retrieve_xml_from_rest_client() throws URISyntaxException, IOException, JAXBException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+    void should_retrieve_xml_from_rest_client() throws URISyntaxException, IOException {
     	ClassLoader classLoader = getClass().getClassLoader();
     	file = new File(classLoader.getResource(testFileUrl).toURI());	
     	
     	InputStream data=Files.newInputStream(file.toPath());
     	
-    	requestDTO=decryptedMPRequestDtoConfig.getDecryptedMultipartDTO(data);
+    	requestDTO=decryptedMPRequestDtoConfig.getDecryptedMultipartDTO(data).get();
     	
     	ProfileDTO xmlResult=tkService.extract(requestDTO,file.getName());	
     	

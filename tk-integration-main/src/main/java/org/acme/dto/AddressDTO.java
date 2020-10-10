@@ -59,7 +59,7 @@ public class AddressDTO {
 	 * must be present in order to unmarshall the xml into objects
 	 */
 	public AddressDTO() {
-		// TODO Auto-generated constructor stub
+		
 	}
 	
 	public AddressDTO(String streetName, String streetNumberBase, String postalCode, String city) {

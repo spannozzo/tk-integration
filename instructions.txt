@@ -1,0 +1,54 @@
+on each tk-integration-* folder (main,auth,fu) run :
+mvn package -Pnative -Dquarkus.native.container-build=true -DskipTests
+
+on main folder run
+docker-compose up --build
+the application is ready at localhost:8080
+
+docker-compose stop
+
+change spannozzo with your docker username
+docker image tag [docker username]/tk-integration_tk-integration-main-native spannozzo/tk-integration-main-native
+docker image tag [docker username]/tk-integration_tk-integration-auth-native spannozzo/tk-integration-auth-native
+docker image tag [docker username]/tk-integration_tk-integration-fu-native spannozzo/tk-integration-fu-native
+
+kubernetes need to pull images from docker registry
+
+docker push [docker username]/tk-integration-main-native
+docker push [docker username]/tk-integration-auth-native
+docker push [docker username]/tk-integration-fu-native
+
+kubectl apply -f build.yaml
+kubectl get all --namespace=tk-integration-ns
+
+the application is ready at localhost:8445
+
+import openapi-final into postman in order to see the api commands
+
+all passwords are encrypted
+
+for retrieving a jwt token:
+acme_tk-admin
+YkkY@c$nUy@h
+
+get token
+curl --location --request GET 'https://localhost:8445/accesstoken' \
+--header 'Authorization: Basic YWNtZV90ay1hZG1pbjpZa2tZQGMkblV5QGg='
+
+get the token and replace on next commands
+
+submit file
+curl --location --request POST 'https://localhost:8445/submit' \
+--header 'accept: */*' \
+--header 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL3F1YXJrdXMuaW8vdXNpbmctand0LXJiYWMiLCJ1cG4iOiJzcGFubm96em9AYWNtZS5qd3QiLCJncm91cHMiOlsiQURNSU4iLCJVU0VSIl0sImlhdCI6MTYwMTk3ODA4MiwiZXhwIjoxNjAxOTgxNjgyLCJ6b25laW5mbyI6IkdNVCIsImp0aSI6IjlBZ2taX19IUXZPYlNFcE9HaHVRRlEifQ.rRIPqXHj6fuoDT0ZZTF52kCv5zOQmMJjjVMPKE5C0SgJb9Gb1WdTEFpxKtBtttNqXo2mJYvhQgXls3UkT0jitc9ekRuGF6ePeMp2FZIeCXfgM0yGReHXRTpcIYG7ciJQunh8zzroGP23cmphkik7cfwNaOoLUHS85XLUmoRjg7AkBk3w2B8UghDStXzNz4QkxUswB4mU4zcDkfNBGgA_AZSTfNZfk8hsPASnagEYAhL9KhybTN2sqLiCemoQ2nVzjPXcDxWXuftTWMPEbIjylsuasrTZXyoxyVbMijn6rFW8d1UQmOccjF3UGyq-QPOyIFlweG4pVN7Ax-o4VOd1TA' \
+--header 'Content-Type: multipart/form-data' \
+--form 'file=@/C:/Users/salva/Downloads/petra.doc' \
+--form 'fileName=petra.doc'
+
+call the tk service
+curl --location --request GET 'https://localhost:8445/retrieve/f92260cf-2668-4853-a1a1-6ec649b97635' \
+--header 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwczovL3F1YXJrdXMuaW8vdXNpbmctand0LXJiYWMiLCJ1cG4iOiJzcGFubm96em9AYWNtZS5qd3QiLCJncm91cHMiOlsiQURNSU4iLCJVU0VSIl0sImlhdCI6MTYwMTk3ODA4MiwiZXhwIjoxNjAxOTgxNjgyLCJ6b25laW5mbyI6IkdNVCIsImp0aSI6IjlBZ2taX19IUXZPYlNFcE9HaHVRRlEifQ.rRIPqXHj6fuoDT0ZZTF52kCv5zOQmMJjjVMPKE5C0SgJb9Gb1WdTEFpxKtBtttNqXo2mJYvhQgXls3UkT0jitc9ekRuGF6ePeMp2FZIeCXfgM0yGReHXRTpcIYG7ciJQunh8zzroGP23cmphkik7cfwNaOoLUHS85XLUmoRjg7AkBk3w2B8UghDStXzNz4QkxUswB4mU4zcDkfNBGgA_AZSTfNZfk8hsPASnagEYAhL9KhybTN2sqLiCemoQ2nVzjPXcDxWXuftTWMPEbIjylsuasrTZXyoxyVbMijn6rFW8d1UQmOccjF3UGyq-QPOyIFlweG4pVN7Ax-o4VOd1TA'
+
+
+
+

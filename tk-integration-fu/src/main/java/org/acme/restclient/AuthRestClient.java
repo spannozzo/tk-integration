@@ -16,13 +16,6 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @RegisterRestClient(baseUri = "%{auth.url}")
 public interface AuthRestClient {
-
-//	@ConfigProperty(name = "auth.url")
-//	final String url="";
-//	default String getUrl() {
-//		return url;
-//	}
-	
 	
 	
 	@GET
