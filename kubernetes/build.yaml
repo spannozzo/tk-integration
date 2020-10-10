@@ -158,10 +158,9 @@ spec:
         name: tk-integration-fu
         ports:
         - containerPort: 8082
-        # - containerPort: 8444
-        # volumeMounts:
-        # - name: stored-cv-folder
-          # mountPath: ./
+        volumeMounts:
+        - name: stored-cv-folder
+          mountPath: /stored-cvs/
         resources: {}
       restartPolicy: Always
       serviceAccountName: ""
