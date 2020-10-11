@@ -26,6 +26,7 @@ import org.acme.restclient.AuthRestClient;
 import org.acme.restclient.FuRestClient;
 import org.acme.service.IntegrationService;
 import org.eclipse.microprofile.jwt.JsonWebToken;
+import org.eclipse.microprofile.metrics.annotation.Counted;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
@@ -84,6 +85,9 @@ public class TKIntegrationController {
 					+ "but there is a previous process still in progress. It will respond with 'PROGRESS' ", content = @Content)
 
 	})
+    @Counted(	name = "processed-files", 
+	displayName = "Processed Files",         
+	description = "How many time the TK API have been used to process files" )
     public CompletionStage<Response> retrieveData(@PathParam("processId") @NotBlank String processId)  {
     	    	
     	InputStream fileIS=integrationService.findFile(jwt.getRawToken(),processId);

@@ -89,7 +89,11 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
 		</dependency>
-        <dependency>
+		<dependency>
+			<groupId>io.quarkus</groupId>
+			<artifactId>quarkus-smallrye-metrics</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.acme</groupId>
 			<artifactId>tk-integration-util</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
