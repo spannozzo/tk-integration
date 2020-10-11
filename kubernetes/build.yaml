@@ -33,6 +33,7 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: tk-integration-fu
+    app: tk-integration-fu
   name: tk-integration-fu
   namespace: tk-integration-ns
 spec:
@@ -121,16 +122,15 @@ metadata:
     kompose.cmd: kompose convert
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
+  name: tk-integration-fu
   labels:
     io.kompose.service: tk-integration-fu
-  name: tk-integration-fu
   namespace: tk-integration-ns
 spec:
-  replicas: 3
+  replicas: 1 #must be one or the application will not be able to retrieve all the stored cvs, due to they will be in different images
   selector:
     matchLabels:
       io.kompose.service: tk-integration-fu
-  strategy: {}
   template:
     metadata:
       annotations:
@@ -237,7 +237,7 @@ metadata:
     io.kompose.network/tk-integration-network: "true"
 spec:
   accessModes:
-  - ReadWriteMany  
+  - ReadWriteOnce  
   resources:
     requests:
       storage: 1Gi
