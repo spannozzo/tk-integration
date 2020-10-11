@@ -127,7 +127,7 @@ metadata:
     io.kompose.service: tk-integration-fu
   namespace: tk-integration-ns
 spec:
-  replicas: 1 #must be one or the application will not be able to retrieve all the stored cvs, due to they will be in different images
+  replicas: 3
   selector:
     matchLabels:
       io.kompose.service: tk-integration-fu
@@ -141,10 +141,14 @@ spec:
         io.kompose.network/tk-integration-network: "true"
         io.kompose.service: tk-integration-fu
     spec:
+      volumes:
+      - name: stored-cv-folder
+        persistentVolumeClaim:
+          claimName: stored-cv-folder
       containers:
       - env:
         - name: cv-store-folder
-          value: ./
+          value: /stored-cv
         - name: mp.jwt.verify.publickey.location
           value: /META-INF/resources/publickey.pem
         - name: "auth.url"
@@ -160,14 +164,10 @@ spec:
         - containerPort: 8082
         volumeMounts:
         - name: stored-cv-folder
-          mountPath: /stored-cvs/
+          mountPath: "/stored-cv"
         resources: {}
       restartPolicy: Always
       serviceAccountName: ""
-      volumes:
-      - name: stored-cv-folder
-        persistentVolumeClaim:
-          claimName: stored-cv-folder
 status: {}
 ---
 apiVersion: apps/v1
@@ -229,19 +229,35 @@ status: {}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  namespace: tk-integration-ns
-  creationTimestamp: null
   name: stored-cv-folder
+  namespace: tk-integration-ns
   labels:
     io.kompose.service: tk-integration-fu
     io.kompose.network/tk-integration-network: "true"
 spec:
   accessModes:
-  - ReadWriteOnce  
+  - ReadWriteOnce 
   resources:
     requests:
       storage: 1Gi
-status: {}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: task-pv-volume
+  namespace: tk-integration-ns
+  labels:
+    type: local
+    io.kompose.service: tk-integration-fu
+    io.kompose.network/tk-integration-network: "true"
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
